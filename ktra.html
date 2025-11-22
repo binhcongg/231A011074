@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đèn Kéo Quân Trung Thu</title>
+    <!-- Sử dụng Tailwind CDN cho styling cơ bản, nhưng hiệu ứng 3D sẽ dùng CSS thuần -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        
+        /* Đặt font Inter cho giao diện */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            background-color: #2c3e50;
+            font-family: 'Inter', sans-serif;
+            background-color: #2c3e50; /* ĐÃ THAY ĐỔI: Xanh Navy đậm, nổi bật hơn */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            perspective: 1000px; /* Thêm phối cảnh cho hiệu ứng 3D */
+            overflow-x: hidden; /* Giữ lại để ngăn thanh cuộn ngang khi lồng đèn xoay */
+            padding: 20px;
+        
+        }
+
+        /* --- Cấu trúc Lồng Đèn 3D --- */
+
+        .scene {
+            /* Tăng kích thước khung nhìn scene để đảm bảo lồng đèn 300x300 không bị tràn */
+            /* Kích thước 400x400 cung cấp đủ không gian cho phối cảnh và bóng đổ */
+            width: 400px; 
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .lantern-container {
+            width: 300px;
+            height: 300px;
+            position: relative;
+            transform-style: preserve-3d; /* Giữ cho các phần tử con nằm trong không gian 3D */
+            
+            /* Kích hoạt hiệu ứng quay vòng tròn */
+            animation: rotateLantern 20s infinite linear;
+
+            /* ĐÃ THAY ĐỔI: Thêm hiệu ứng phát sáng (Glow) nhẹ */
+            box-shadow: 0 0 40px rgba(255, 165, 0, 0.5); 
+            border-radius: 12px; /* Bo góc cho cả khối */
+        }
+
+        .lantern-face {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border: 2px solid #ffcc66; /* ĐÃ THAY ĐỔI: Màu viền vàng đồng sáng hơn */
+            background-color: rgba(255, 255, 255, 0.9); /* Nền sáng hơn một chút để nổi bật ảnh */
+            /* Đảm bảo hình ảnh vừa vặn */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 8px; /* Bo góc nhẹ */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4); /* Tạo chiều sâu nhẹ */
+            transition: transform 0.5s ease-in-out; /* Chuyển đổi mượt mà khi tương tác */
+        }
+
+        .lantern-face img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Đảm bảo hình ảnh lấp đầy mặt */
+        }
+
+        /* Định vị 6 mặt của hình lăng trụ lục giác đều */
+        /* Cạnh hình vuông là 300px. Bán kính quay (R) cho lăng trụ lục giác đều (6 mặt) là:
+           R = a / (2 * tan(180/6)) ≈ 259.8px. Sử dụng 260px. */
+        
+        .face-1 { transform: rotateY(  0deg) translateZ(260px); }
+        .face-2 { transform: rotateY( 60deg) translateZ(260px); }
+        .face-3 { transform: rotateY(120deg) translateZ(260px); }
+        .face-4 { transform: rotateY(180deg) translateZ(260px); }
+        .face-5 { transform: rotateY(240deg) translateZ(260px); }
+        .face-6 { transform: rotateY(300deg) translateZ(260px); }
+
+        /* Hiệu ứng Quay (Xoay 360 độ quanh trục Y) */
+        @keyframes rotateLantern {
+            from { transform: rotateY(0deg); }
+            to { transform: rotateY(360deg); }
+        }
+
+        /* Khi rê chuột vào, tạm dừng animation */
+        .lantern-container.paused {
+            animation-play-state: paused;
+        }
+
+        /* Khi rê chuột ra, tiếp tục animation */
+        .lantern-container.running {
+            animation-play-state: running;
+        }
+
+        /* CSS cho phần tiêu đề */
+        .title-card {
+            background-color: #e9b343; /* Màu vàng cam của đèn */
+            color: #f7f3e8; /* Màu chữ trắng sáng */
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        .title-card h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+        }
+        .title-card p {
+            font-size: 1.1rem;
+            font-style: italic;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center">
+
+    <div class="title-card">
+        <h1>Đèn Kéo Quân Trung Thu</h1>
+        <p>Rê chuột vào đèn để dừng, rê ra để quay tiếp!</p>
+    </div>
+
+    <div class="scene">
+        <div id="lantern" class="lantern-container">
+            
+            <!-- Mặt 1: Chân dung của bạn (Đã cập nhật đường dẫn ảnh) -->
+            <div class="lantern-face face-1">
+                <img src="image/IMG_7464.jpeg" alt="Chân dung của bạn">
+            </div>
+
+            <!-- Mặt 2 -->
+            <div class="lantern-face face-2">
+                <img src="https://placehold.co/300x300/a0522d/ffffff?text=Ông+Trăng" alt="Ông Trăng">
+            </div>
+
+            <!-- Mặt 3 -->
+            <div class="lantern-face face-3">
+                <img src="https://placehold.co/300x300/ff7f50/ffffff?text=Chú+Cuội" alt="Chú Cuội">
+            </div>
+
+            <!-- Mặt 4 -->
+            <div class="lantern-face face-4">
+                <img src="https://placehold.co/300x300/4682b4/ffffff?text=Chị+Hằng" alt="Chị Hằng">
+            </div>
+
+            <!-- Mặt 5 -->
+            <div class="lantern-face face-5">
+                <img src="https://placehold.co/300x300/3cb371/ffffff?text=Múa+Lân" alt="Múa Lân">
+            </div>
+
+            <!-- Mặt 6 -->
+            <div class="lantern-face face-6">
+                <img src="https://placehold.co/300x300/8a2be2/ffffff?text=Lồng+Đèn" alt="Lồng Đèn">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lấy phần tử lồng đèn
+        const lantern = document.getElementById('lantern');
+
+        // Hàm xử lý khi rê chuột vào (mouseover)
+        lantern.addEventListener('mouseover', () => {
+            // Tạm dừng animation bằng cách thêm class 'paused'
+            // và loại bỏ class 'running' để đảm bảo không bị xung đột
+            lantern.classList.add('paused');
+            lantern.classList.remove('running');
+            console.log('Đèn kéo quân đã dừng.');
+        });
+
+        // Hàm xử lý khi rê chuột ra (mouseout)
+        lantern.addEventListener('mouseout', () => {
+            // Tiếp tục animation bằng cách thêm class 'running'
+            // và loại bỏ class 'paused'
+            lantern.classList.remove('paused');
+            lantern.classList.add('running');
+            console.log('Đèn kéo quân tiếp tục quay.');
+        });
+        
+        // Đảm bảo đèn bắt đầu quay ngay khi tải trang
+        // Animation CSS tự động chạy, nhưng thêm class 'running' 
+        // để chuẩn bị cho việc rê chuột ra (mouseout) đầu tiên.
+        window.onload = () => {
+             lantern.classList.add('running');
+        };
+
+        // Gợi ý: Nếu bạn muốn thay đổi hình ảnh thật, hãy thay thế các URL 
+        // "https://placehold.co/..." bằng đường dẫn hình ảnh của riêng bạn.
+    </script>
+</body>
+</html>
